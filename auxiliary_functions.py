@@ -92,6 +92,15 @@ def assemble_model(options):
 
     model.build_model()
 
+    events_drop = [
+        "Zero electrolyte concentration cut-off"
+    ]
+
+    if options["name"].startswith("DFN"):
+        for event in model.events:
+            if event.name in events_drop:
+                model.events.remove(event)
+
     return model
 
 def set_parameters():
