@@ -125,23 +125,30 @@ def set_parameters():
 
     return param
 
-def run_RPT(simulation, experiment=None, C_rate=None):
-    # Add argument for how many/which cycles to run
+def run_RPT(simulation, C_rate=1 / 3, RPT_at_cycles=None):
+    """Runs RPT for a given simulation and C_rate."""
 
-    if experiment is None:
-        experiment = pybamm.Experiment(["Discharge at C/3 until 2.5V"])
+    experiment = pybamm.Experiment(["Discharge at {}C until 2.5V".format(C_rate)])
 
     capacity = []
     termination = []
     N = len(simulation.solution.all_first_states)
 
-    for i, first_state in enumerate(simulation.solution.all_first_states):
+    if RPT_at_cycles is None:
+        cycle_list = list(range(N))
+    elif isinstance(RPT_at_cycles, int):
+        cycle_list = list(range(RPT_at_cycles - 1, N, RPT_at_cycles))
+        cycle_list = [0] + cycle_list
+    else:
+        cycle_list = RPT_at_cycles
+
+    for i in cycle_list:
         # print output
-        print("Running RPT {} of {}".format(i + 1, N))
+        print("Running RPT for cycle {} of {}".format(i + 1, N))
 
         # set initial conditions
         model = simulation.model
-        model.set_initial_conditions_from(first_state)
+        model.set_initial_conditions_from(simulation.solution.all_first_states[i])
 
         # solve cycle
         if experiment is not None:
@@ -157,10 +164,8 @@ def run_RPT(simulation, experiment=None, C_rate=None):
 
     df = pd.DataFrame(
         data={
-            "Cycle number": range(1, N + 1),
+            "Cycle number": [x + 1 for x in cycle_list],
             "Discharge capacity [A.h]": capacity,
             "Termination": termination,
         }
     )
-
-    return df
