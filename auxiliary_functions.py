@@ -169,3 +169,5 @@ def run_RPT(simulation, C_rate=1 / 3, RPT_at_cycles=None):
             "Termination": termination,
         }
     )
+
+    return df
