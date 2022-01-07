@@ -159,7 +159,7 @@ def plot_capacity(sims, filename, C_rates=[1 / 3, 1 / 2, 1]):
     return fig, axes
 
 
-def plot_porosity(sims):
+def plot_average_porosity(sims):
     # Compare average thickness/porosity vs cycle number
     fig, axes = plt.subplots(1, 1, figsize=(7.5, 5))
     N = 0
@@ -196,8 +196,50 @@ def plot_porosity(sims):
 
     return fig, axes
 
-    pass
+def plot_porosity_distribution(sims, plot_at_cycles=None):
+    # Compare thickness/porosity at different cycle numbers
+    fig, axes = plt.subplots(1, 1, figsize=(7.5, 5))
+    N = min([len(sim.solution.all_first_states) for sim in sims])
 
+    if plot_at_cycles is None:
+        cycle_list = list(range(N))
+    elif isinstance(plot_at_cycles, int):
+        cycle_list = list(range(plot_at_cycles - 1, N, plot_at_cycles))
+        cycle_list = [0] + cycle_list
+        if cycle_list[-1] < N:
+            cycle_list = cycle_list + [N]
+
+    else:
+        cycle_list = plot_at_cycles
+
+    for sim in sims:
+        if sim.model.name[:3] == "DFN":
+            linestyle = "-"
+            color = "black"
+            linewidth = 1
+        else:
+            linestyle = "--"
+            color = None
+            linewidth = None
+
+        for cycle in cycle_list:
+            sol = sim.solution.all_first_states[cycle]
+            porosity = sol["Negative electrode porosity"]
+            x = sol["x_n [m]"]
+
+            axes.plot(
+                x,
+                porosity,
+                label=sim.model.name,
+                linestyle=linestyle,
+                color=color,
+                linewidth=linewidth,
+            )
+
+    axes.set_xlabel("x [m]")
+    axes.set_ylabel("Negative electrode porosity")
+
+    return fig, axes
 
 if __name__ == "__main__":
     N_cycles = 1000
@@ -243,10 +285,16 @@ if __name__ == "__main__":
         dpi=300,
     )
 
-    fig, axes = plot_porosity(sims)
+    fig, axes = plot_average_porosity(sims)
     fig.savefig(
         os.path.join("figures", "compare_porosity" + save_filename + ".png"), 
         dpi=300,
     )
+
+    fig, axes = plot_porosity_distribution(sims, plot_at_cycles=100)
+    # fig.savefig(
+    #     os.path.join("figures", "compare_porosity" + save_filename + ".png"), 
+    #     dpi=300,
+    # )
 
     plt.show()
