@@ -1,27 +1,10 @@
 import pybamm
 import pandas as pd
+import gc
 
 
 def create_filename(model, C_dch, C_ch):
-    tag = ""
-    if isinstance(model, pybamm.BaseModel):
-        model_name = model.name
-        if not isinstance(model.submodels["sei"], pybamm.sei.NoSEI):
-            tag += "_SEI"
-        if not isinstance(
-            model.submodels["lithium plating"], pybamm.lithium_plating.NoPlating
-        ):
-            tag += "_plating"
-        if not isinstance(model.submodels["porosity"], pybamm.porosity.Constant):
-            tag += "_porosity"
-    else:
-        model_name = model["name"]
-        if model["SEI"]:
-            tag += "_SEI"
-        if model["plating"]:
-            tag += "_plating"
-        if model["porosity"]:
-            tag += "_porosity"
+    model_name, tag = create_model_tag(model)
 
     if isinstance(C_dch, str):
         dch_tag = C_dch
@@ -57,7 +40,7 @@ def run_cycle(simulation, cycle_number, experiment=None):
     return sim
 
 
-def create_C_tag(C_rate):
+def create_C_tag(C_rate, bar=False):
     if float(C_rate).is_integer():
         C_tag = "{:.0f}C".format(C_rate)
     elif float(1 / C_rate).is_integer():
@@ -65,7 +48,34 @@ def create_C_tag(C_rate):
     else:
         C_tag = "{:.2f}C".format(C_rate)
 
+    if bar and C_tag[0] == "C": 
+        C_tag = C_tag[0] + "/" + C_tag[1:]
+
     return C_tag
+
+def create_model_tag(model):
+    tag = ""
+    
+    if isinstance(model, pybamm.BaseModel):
+        model_name = model.name
+        if not isinstance(model.submodels["sei"], pybamm.sei.NoSEI):
+            tag += "_SEI"
+        if not isinstance(
+            model.submodels["lithium plating"], pybamm.lithium_plating.NoPlating
+        ):
+            tag += "_plating"
+        if not isinstance(model.submodels["porosity"], pybamm.porosity.Constant):
+            tag += "_porosity"
+    else:
+        model_name = model["name"]
+        if model["SEI"]:
+            tag += "_SEI"
+        if model["plating"]:
+            tag += "_plating"
+        if model["porosity"]:
+            tag += "_porosity"
+    
+    return model_name, tag
 
 
 def assemble_model(options):
@@ -103,8 +113,13 @@ def assemble_model(options):
 
     return model
 
-def set_parameters():
-    chemistry = pybamm.parameter_sets.Chen2020
+def set_parameters(ref="Chen2020"):
+    if ref == "Chen2020":
+        chemistry = pybamm.parameter_sets.Chen2020
+    elif ref == "ORegan2021":
+        chemistry = pybamm.parameter_sets.ORegan2021
+    else:
+        raise ValueError("The parameter set " + ref + " is not supported")
     chemistry.update({"lithium plating": "okane2020_Li_plating"})
     param = pybamm.ParameterValues(chemistry=chemistry)
 
@@ -120,7 +135,8 @@ def set_parameters():
             "SEI kinetic rate constant [m.s-1]": 1e-4,
             "SEI open-circuit potential [V]": 0.8,
             "Lithium plating kinetic rate constant [m.s-1]": 1e-11,
-        }
+        },
+        check_already_exists=False,
     )
 
     return param
@@ -161,6 +177,10 @@ def run_RPT(simulation, C_rate=1 / 3, RPT_at_cycles=None):
         sim.solve()
         capacity.append(sim.solution["Discharge capacity [A.h]"].entries[-1])
         termination.append(sim.solution.termination)
+
+        del model
+        del sim
+        gc.collect()
 
     df = pd.DataFrame(
         data={

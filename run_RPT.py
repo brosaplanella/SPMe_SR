@@ -1,60 +1,10 @@
 import pybamm
 import os
+import gc
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from auxiliary_functions import create_filename, run_RPT
-
-
-# def run_RPT(simulation, experiment=None, C_rate=None):
-#     # Add argument for how many/which cycles to run
-
-#     # if experiment is None and C_rate is None:
-#     #     C_rate = 0.5
-
-#     if experiment is None:
-#         experiment = pybamm.Experiment(["Discharge at C/2 until 2.5V"])
-
-#     capacity = []
-#     termination = []
-#     N = len(simulation.solution.all_first_states)
-
-#     for i, first_state in enumerate(simulation.solution.all_first_states):
-#         # print output
-#         print("Running RPT {} of {}".format(i + 1, N))
-
-#         # set initial conditions
-#         model = simulation.model
-#         model.set_initial_conditions_from(first_state)
-
-#         # solve cycle
-#         if experiment is not None:
-#             sim = pybamm.Simulation(
-#                 model,
-#                 experiment=experiment,
-#                 parameter_values=simulation.parameter_values,
-#                 # solver=simulation.solver,
-#             )
-#         # if C_rate is not None:
-#         #     sim = pybamm.Simulation(
-#         #         model,
-#         #         C_rate=C_rate,
-#         #         parameter_values=simulation.parameter_values,
-#         #         solver=simulation.solver,
-#         #     )
-#         sim.solve()
-#         capacity.append(sim.solution["Discharge capacity [A.h]"].entries[-1])
-#         termination.append(sim.solution.termination)
-
-#     df = pd.DataFrame(
-#         data={
-#             "Cycle number": range(1, N + 1),
-#             "Discharge capacity [A.h]": capacity,
-#             "Termination": termination,
-#         }
-#     )
-
-#     return df
 
 
 plt.style.use(["science", "vibrant"])
@@ -86,41 +36,50 @@ elif mode == "paper":
     )
 
 
-N_cycles = 1000
-C_ch = 1 / 2
+N_cycles = 2000
+C_ch = 1 / 3
 C_dch = 1
 
-options = {"SEI": False, "plating": True, "porosity": True}
+options = {"SEI": True, "plating": False, "porosity": True}
 
-SPMe = pybamm.load_sim(
-    os.path.join(
-        "data",
-        "sim_"
-        + create_filename({"name": "SPMe_SR", **options}, C_dch, C_ch)
-        + "_{}.pkl".format(N_cycles),
-    )
-)
+# SPMe = pybamm.load_sim(
+#     os.path.join(
+#         "data",
+#         "sim_"
+#         + create_filename({"name": "SPMe_SR", **options}, C_dch, C_ch)
+#         + "_{}.pkl".format(N_cycles),
+#     )
+# )
 
-DFN = pybamm.load_sim(
-    os.path.join(
-        "data",
-        "sim_"
-        + create_filename({"name": "DFN_SR", **options}, C_dch, C_ch)
-        + "_{}.pkl".format(N_cycles),
-    )
-)
+# DFN = pybamm.load_sim(
+#     os.path.join(
+#         "data",
+#         "sim_"
+#         + create_filename({"name": "DFN_SR", **options}, C_dch, C_ch)
+#         + "_{}.pkl".format(N_cycles),
+#     )
+# )
 
-sims = [SPMe, DFN]
-# sims = [DFN]
+RPT_at_cycles = 10
+# sims = ["SPMe_SR", "DFN_SR"]
+sims = ["DFN_SR"]
 C_rates = [1 / 3, 1 / 2, 1]
 # C_rates = [1 / 3, 1 / 2]
 # C_rates = [1]
 
-for sim in sims:
+for name in sims:
+    sim = pybamm.load_sim(
+        os.path.join(
+            "data",
+            "sim_"
+            + create_filename({"name": name, **options}, C_dch, C_ch)
+            + "_{}.pkl".format(N_cycles),
+        )
+    )
     for C_rate in C_rates:
         print("RPT for {} at {:.2f}C".format(sim.model.name, C_rate))
-        experiment = pybamm.Experiment(["Discharge at {}C until 2.5 V".format(C_rate)])
-        df = run_RPT(sim, experiment=experiment)
+        # experiment = pybamm.Experiment(["Discharge at {}C until 2.5 V".format(C_rate)])
+        df = run_RPT(sim, C_rate=C_rate, RPT_at_cycles=RPT_at_cycles)
         if float(C_rate).is_integer():
             C_tag = "_{:.0f}C_".format(C_rate)
         elif float(1 / C_rate).is_integer():
@@ -137,3 +96,5 @@ for sim in sims:
                 + "_{}.csv".format(N_cycles),
             )
         )
+        
+        gc.collect()
