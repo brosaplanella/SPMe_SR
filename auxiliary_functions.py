@@ -125,14 +125,14 @@ def set_parameters(ref="Chen2020"):
 
     param.update(
         {
-            "EC diffusivity [m2.s-1]": 2.5e-20,
+            "EC diffusivity [m2.s-1]": 2.5e-20, # was 2.5e-20, in Yang et al it is 2e-18
             "Inner SEI partial molar volume [m3.mol-1]": 0.162 / 1690,
             "Outer SEI partial molar volume [m3.mol-1]": 0.162 / 1690,
             "SEI resistivity [Ohm.m]": 2e5,
             "Initial inner SEI thickness [m]": 0,
             "Initial outer SEI thickness [m]": 5e-9,
             "EC initial concentration in electrolyte [mol.m-3]": 4541,
-            "SEI kinetic rate constant [m.s-1]": 1e-4,
+            "SEI kinetic rate constant [m.s-1]": 1e-12, # was 1e-4!, in Yang et al it is 1e-12
             "SEI open-circuit potential [V]": 0.8,
             "Lithium plating kinetic rate constant [m.s-1]": 1e-11,
         },

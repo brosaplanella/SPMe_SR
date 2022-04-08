@@ -11,7 +11,7 @@ pybamm.set_logging_level("WARNING")
 # pybamm.set_logging_level("INFO")
 
 # Define models
-options = {"SEI": True, "plating": True, "porosity": True}
+options = {"SEI": True, "plating": False, "porosity": True}
 SPMe = assemble_model({"name": "SPMe+SR", **options})
 DFN = assemble_model({"name": "DFN+SR", **options})
 
@@ -20,8 +20,10 @@ models = [SPMe, DFN]
 
 solvers = [
     # pybamm.ScipySolver(),
-    pybamm.CasadiSolver("fast with events"),
-    pybamm.CasadiSolver("fast with events"),
+    pybamm.ScikitsOdeSolver(),
+    pybamm.ScikitsDaeSolver(),
+    # pybamm.CasadiSolver("fast with events"),
+    # pybamm.CasadiSolver("fast with events"),
 ]
 
 # Define parameters
@@ -30,8 +32,8 @@ param = set_parameters("Chen2020")
 # Change simulation parameters here
 N_solve = 10  # number of times to run the solver to get computational time
 N_cycles = 10
-C_chs = [1 / 3, 1 / 2]
-# C_chs = [1 / 3]
+# C_chs = [1 / 3, 1 / 2]
+C_chs = [1 / 3]
 C_dchs = [1, 2]
 
 tables = [PrettyTable([model.name, "1C", "2C"]) for model in models]
@@ -43,9 +45,10 @@ for i, model in enumerate(models):
         for k, C_dch in enumerate(C_dchs):
             print("Running simulation for {}C charge and {}C discharge".format(C_ch, C_dch))
 
-            N_mesh = 1
+            factor_x = 2
+            factor_r = 1
             var = pybamm.standard_spatial_vars
-            var_pts = {var.x_n: 30 * N_mesh, var.x_s: 30 * N_mesh, var.x_p: 30 * N_mesh, var.r_n: 10 * N_mesh, var.r_p: 10 * N_mesh}
+            var_pts = {var.x_n: 30 * factor_x, var.x_s: 30 * factor_x, var.x_p: 30 * factor_x, var.r_n: 10 * factor_r, var.r_p: 10 * factor_r}
 
             experiment = pybamm.Experiment(
                 [
@@ -59,8 +62,8 @@ for i, model in enumerate(models):
             sim = pybamm.Simulation(
                 model,
                 parameter_values=param,
-                experiment=experiment,
-                # C_rate=C_dch,
+                # experiment=experiment,
+                C_rate=C_dch,
                 var_pts=var_pts,
                 solver=solvers[i],
             )

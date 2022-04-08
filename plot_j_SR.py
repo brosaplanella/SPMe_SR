@@ -58,7 +58,7 @@ axes.plot(x, f_SEI_Yang(x), label="EC (Yang)")
 axes.plot(x, f_Li_Yang(x), label="Plating (Yang)")
 
 axes.set_xlabel("Negative electrode potential [V]")
-axes.set_ylabel("Ratio $j_{SR}$/$j_{n}$")
+axes.set_ylabel("Ratio $\~j_{SR}$/$j_{n}$")
 axes.legend()
 
 fig.tight_layout()
