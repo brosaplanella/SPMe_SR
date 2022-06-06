@@ -134,3 +134,4 @@ dmypy.json
 # Ignore data and figures
 data/
 figures/
+old_files/
