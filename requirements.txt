@@ -1,0 +1,5 @@
+pybamm
+matplotlib
+prettytable
+flake8
+SciencePlots
