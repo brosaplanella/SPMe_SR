@@ -5,7 +5,8 @@
 
 import pybamm
 import numpy as np
-from auxiliary_functions import *
+import pandas as pd
+from auxiliary_functions import assemble_model, set_parameters, create_model_tag
 
 pybamm.set_logging_level("WARNING")
 
@@ -36,11 +37,11 @@ for model in models:
                 + f" factor_r = {factor_r}"
             )
             var_pts = {
-                var.x_n: 30 * factor_x,
-                var.x_s: 30 * factor_x,
-                var.x_p: 30 * factor_x,
-                var.r_n: 10 * factor_r,
-                var.r_p: 10 * factor_r,
+                var.x_n: 20 * factor_x,
+                var.x_s: 20 * factor_x,
+                var.x_p: 20 * factor_x,
+                var.r_n: 20 * factor_r,
+                var.r_p: 20 * factor_r,
             }
             sim = pybamm.Simulation(
                 model,

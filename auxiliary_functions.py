@@ -1,6 +1,38 @@
+#
+# Define auxiliary functions to run the scripts
+#
+
 import pybamm
 import pandas as pd
+import matplotlib.pyplot as plt
 import gc
+
+
+def set_plotting_format(mode="presentation"):
+    plt.style.use(["science", "vibrant"])
+
+    mode = "paper"
+
+    if mode == "presentation":
+        plt.rcParams.update(
+            {
+                "font.family": "sans-serif",
+                "text.usetex": False,
+                "font.size": 10,
+                "axes.labelsize": 12,
+                "lines.linewidth": 2,
+            }
+        )
+
+    elif mode == "paper":
+        plt.rcParams.update(
+            {
+                "font.family": "sans-serif",
+                "text.usetex": False,
+                "font.size": 6,
+                "axes.labelsize": 8,
+            }
+        )
 
 
 def create_filename(model, C_dch, C_ch):
@@ -33,6 +65,7 @@ def run_cycle(simulation, cycle_number, experiment=None):
         model,
         experiment=experiment,
         parameter_values=simulation.parameter_values,
+        var_pts=simulation.var_pts,
         # solver=simulation.solver,
     )
     sim.solve()
@@ -48,14 +81,15 @@ def create_C_tag(C_rate, bar=False):
     else:
         C_tag = "{:.2f}C".format(C_rate)
 
-    if bar and C_tag[0] == "C": 
+    if bar and C_tag[0] == "C":
         C_tag = C_tag[0] + "/" + C_tag[1:]
 
     return C_tag
 
+
 def create_model_tag(model):
     tag = ""
-    
+
     if isinstance(model, pybamm.BaseModel):
         model_name = model.name
         if not isinstance(model.submodels["sei"], pybamm.sei.NoSEI):
@@ -74,7 +108,7 @@ def create_model_tag(model):
             tag += "_plating"
         if model["porosity"]:
             tag += "_porosity"
-    
+
     return model_name, tag
 
 
@@ -102,16 +136,15 @@ def assemble_model(options):
 
     model.build_model()
 
-    events_drop = [
-        "Zero electrolyte concentration cut-off"
-    ]
+    # events_drop = ["Zero electrolyte concentration cut-off"]
 
-    if options["name"].startswith("DFN"):
-        for event in model.events:
-            if event.name in events_drop:
-                model.events.remove(event)
+    # if options["name"].startswith("DFN"):
+    #     for event in model.events:
+    #         if event.name in events_drop:
+    #             model.events.remove(event)
 
     return model
+
 
 def set_parameters(ref="Chen2020"):
     if ref == "Chen2020":
@@ -125,21 +158,22 @@ def set_parameters(ref="Chen2020"):
 
     param.update(
         {
-            "EC diffusivity [m2.s-1]": 2.5e-20, # was 2.5e-20, in Yang et al it is 2e-18
+            "EC diffusivity [m2.s-1]": 2e-19,
             "Inner SEI partial molar volume [m3.mol-1]": 0.162 / 1690,
             "Outer SEI partial molar volume [m3.mol-1]": 0.162 / 1690,
             "SEI resistivity [Ohm.m]": 2e5,
             "Initial inner SEI thickness [m]": 0,
             "Initial outer SEI thickness [m]": 5e-9,
             "EC initial concentration in electrolyte [mol.m-3]": 4541,
-            "SEI kinetic rate constant [m.s-1]": 1e-12, # was 1e-4!, in Yang et al it is 1e-12
-            "SEI open-circuit potential [V]": 0.8,
+            "SEI kinetic rate constant [m.s-1]": 1e-12,
+            "SEI open-circuit potential [V]": 0,
             "Lithium plating kinetic rate constant [m.s-1]": 1e-11,
         },
         check_already_exists=False,
     )
 
     return param
+
 
 def run_RPT(simulation, C_rate=1 / 3, RPT_at_cycles=None):
     """Runs RPT for a given simulation and C_rate."""
@@ -173,6 +207,7 @@ def run_RPT(simulation, C_rate=1 / 3, RPT_at_cycles=None):
                 experiment=experiment,
                 parameter_values=simulation.parameter_values,
                 solver=simulation.solver,
+                var_pts=simulation.var_pts,
             )
         sim.solve()
         capacity.append(sim.solution["Discharge capacity [A.h]"].entries[-1])

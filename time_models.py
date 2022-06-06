@@ -2,11 +2,10 @@
 # Get computational time DFN+SR and SPMe+SR
 #
 
-from multiprocessing.sharedctypes import Value
 import pybamm
 import numpy as np
 from prettytable import PrettyTable
-from auxiliary_functions import *
+from auxiliary_functions import assemble_model, set_parameters
 
 pybamm.set_logging_level("WARNING")
 
@@ -14,14 +13,14 @@ pybamm.set_logging_level("WARNING")
 options = {"SEI": True, "plating": True, "porosity": True}
 models = [
     assemble_model({"name": "SPMe+SR", **options}),
-    assemble_model({"name": "DFN+SR", **options})
+    assemble_model({"name": "DFN+SR", **options}),
 ]
 
 # Define parameters
 param = set_parameters()
 
 # Change simulation parameters here
-N_solve = 10 # number of times to run the solver to get computational time
+N_solve = 10  # number of times to run the solver to get computational time
 N_cycles = 10
 C_ch = 1 / 2
 C_dch = 1
@@ -56,8 +55,11 @@ for solver_type in solver_types:
             for factor_r in factors_r:
                 times = []
                 for model in models:
-                    print(f"Running {model.name} for Nx={20 * factor_x} and Nr={20 *factor_r}")
-                    
+                    print(
+                        f"Running {model.name} for Nx={20 * factor_x} and "
+                        f"Nr={20 *factor_r}"
+                    )
+
                     # Define number of points in mesh
                     var_pts = {
                         var.x_n: 20 * factor_x,
@@ -67,13 +69,16 @@ for solver_type in solver_types:
                         var.r_p: 20 * factor_r,
                     }
 
-                    # Define operating mode                   
+                    # Define operating mode
                     if solver_type == "casadi":
                         solver = pybamm.CasadiSolver("safe")
                     elif solver_type == "scikits":
                         solver = pybamm.ScikitsDaeSolver()
                     else:
-                        raise ValueError(f"Solver type {solver_type} not recognised. Should be either 'casadi' or 'scikits'")
+                        raise ValueError(
+                            f"Solver type {solver_type} not recognised. "
+                            f"Should be either 'casadi' or 'scikits'"
+                        )
 
                     if isinstance(mode_settings, pybamm.Experiment):
                         C_rate = None
@@ -86,7 +91,10 @@ for solver_type in solver_types:
                         if solver_type == "scikits" and model.name == "SPMe+SR":
                             solver = pybamm.ScikitsOdeSolver()
                     else:
-                        raise ValueError(f"Mode settings not recognised. Should be either a number or a pybamm.Experiment")
+                        raise ValueError(
+                            "Mode settings not recognised. Should be either a number "
+                            "or a pybamm.Experiment"
+                        )
 
                     sim = pybamm.Simulation(
                         model,
@@ -107,7 +115,10 @@ for solver_type in solver_types:
 
                 table.add_row(
                     [f"Nx = {20 * factor_x}, Nr = {20 * factor_r}"]
-                    + ["{:.2f} +- {:.2f}".format(np.mean(time), np.std(time)) for time in times]
+                    + [
+                        "{:.2f} +- {:.2f}".format(np.mean(time), np.std(time))
+                        for time in times
+                    ]
                 )
 
         tables.append([table, [mode_name, solver_type]])
