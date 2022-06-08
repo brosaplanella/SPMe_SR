@@ -1,4 +1,6 @@
 # Single Particle Model with electrolyte and Side Reactions (SPMe+SR)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6624984.svg)](https://doi.org/10.5281/zenodo.6624984)
+
 Scripts to reproduce the results of the article
 
 > F. Brosa Planella, W. D. Widanage, [Systematic derivation of a Single Particle Model with Electrolyte and Side Reactions (SPMe+SR) for degradation of lithium-ion batteries])(), _Submitted for publication (arXiv:)_ (2022).
