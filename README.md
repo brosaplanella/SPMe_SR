@@ -3,6 +3,14 @@ Scripts to reproduce the results of the article
 
 > F. Brosa Planella, W. D. Widanage, [Systematic derivation of a Single Particle Model with Electrolyte and Side Reactions (SPMe+SR) for degradation of lithium-ion batteries])(), _Submitted for publication (arXiv:)_ (2022).
 
+If you find the code useful please cite our paper, and also use the PyBaMM command
+```python3
+pybamm.print_citations()
+```
+at the end of your script to print all the references that have contributed to the code (model, parameters, solvers...).
+
+If you find any bugs, please open an issue.
+
 ## How to use the code?
 Note that in order to run the code, you need to have the requirements installed and the virtual environment activated (see below). To generate the figures, you will first need to run the simulations and the RPTs to calculate the capacities, otherwise the other scripts will not work:
 1. Run `run_experiments.py` to simulate the experiment. You can change the C-rates and the number of cycles in the script. Note that this step can take a long time.
