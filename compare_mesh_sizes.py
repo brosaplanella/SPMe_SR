@@ -56,8 +56,8 @@ for model in models:
             df = df.append(
                 {
                     "Model": model.name,
-                    "Nx": 30 * factor_x,
-                    "Nr": 10 * factor_r,
+                    "Nx": 20 * factor_x,
+                    "Nr": 20 * factor_r,
                     "# rhs": size_rhs,
                     "# algebraic": size_algebraic,
                     "# total": size_algebraic + size_rhs,

@@ -16,7 +16,7 @@ param = set_parameters()
 
 # Define experiment
 N_cycles = 1000
-save_at_cycles = [1]
+save_at_cycles = [1]    # [1] by default to save memory
 C_ch = 1 / 3
 C_dch = 2
 
