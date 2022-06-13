@@ -3,7 +3,7 @@
 
 Scripts to reproduce the results of the article
 
-> F. Brosa Planella, W. D. Widanage, [Systematic derivation of a Single Particle Model with Electrolyte and Side Reactions (SPMe+SR) for degradation of lithium-ion batteries])(), _Submitted for publication (arXiv:)_ (2022).
+> F. Brosa Planella, W. D. Widanage, [Systematic derivation of a Single Particle Model with Electrolyte and Side Reactions (SPMe+SR) for degradation of lithium-ion batteries](https://arxiv.org/abs/2206.05078), _Submitted for publication (arXiv:2206.05078)_ (2022).
 
 If you find the code useful please cite our paper, and also use the PyBaMM command
 ```python3
