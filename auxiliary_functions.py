@@ -6,6 +6,7 @@ import pybamm
 import pandas as pd
 import matplotlib.pyplot as plt
 import gc
+import scienceplots
 
 
 def set_plotting_format(mode="presentation"):
@@ -136,25 +137,67 @@ def assemble_model(options):
 
     model.build_model()
 
-    # events_drop = ["Zero electrolyte concentration cut-off"]
-
-    # if options["name"].startswith("DFN"):
-    #     for event in model.events:
-    #         if event.name in events_drop:
-    #             model.events.remove(event)
-
     return model
 
 
+def stripping_exchange_current_density_OKane2020(c_e, c_Li, T):
+    """
+    Exchange-current density for Li stripping reaction [A.m-2].
+    References
+    ----------
+    .. [1] O’Kane, Simon EJ, Ian D. Campbell, Mohamed WJ Marzook, Gregory J. Offer, and
+    Monica Marinescu. "Physical origin of the differential voltage minimum associated
+    with lithium plating in Li-ion batteries." Journal of The Electrochemical Society
+    167, no. 9 (2020): 090540.
+    Parameters
+    ----------
+    c_e : :class:`pybamm.Symbol`
+        Electrolyte concentration [mol.m-3]
+    c_Li : :class:`pybamm.Symbol`
+        Plated lithium concentration [mol.m-3]
+    T : :class:`pybamm.Symbol`
+        Temperature [K]
+    Returns
+    -------
+    :class:`pybamm.Symbol`
+        Exchange-current density [A.m-2]
+    """
+
+    k_plating = pybamm.Parameter("Lithium plating kinetic rate constant [m.s-1]")
+
+    return pybamm.constants.F * k_plating * c_Li
+
+
+def plating_exchange_current_density_OKane2020(c_e, c_Li, T):
+    """
+    Exchange-current density for Li plating reaction [A.m-2].
+    References
+    ----------
+    .. [1] O’Kane, Simon EJ, Ian D. Campbell, Mohamed WJ Marzook, Gregory J. Offer, and
+    Monica Marinescu. "Physical origin of the differential voltage minimum associated
+    with lithium plating in Li-ion batteries." Journal of The Electrochemical Society
+    167, no. 9 (2020): 090540.
+    Parameters
+    ----------
+    c_e : :class:`pybamm.Symbol`
+        Electrolyte concentration [mol.m-3]
+    c_Li : :class:`pybamm.Symbol`
+        Plated lithium concentration [mol.m-3]
+    T : :class:`pybamm.Symbol`
+        Temperature [K]
+    Returns
+    -------
+    :class:`pybamm.Symbol`
+        Exchange-current density [A.m-2]
+    """
+
+    k_plating = pybamm.Parameter("Lithium plating kinetic rate constant [m.s-1]")
+
+    return pybamm.constants.F * k_plating * c_e
+
+
 def set_parameters(ref="Chen2020"):
-    if ref == "Chen2020":
-        chemistry = pybamm.parameter_sets.Chen2020
-    elif ref == "ORegan2021":
-        chemistry = pybamm.parameter_sets.ORegan2021
-    else:
-        raise ValueError("The parameter set " + ref + " is not supported")
-    chemistry.update({"lithium plating": "okane2020_Li_plating"})
-    param = pybamm.ParameterValues(chemistry=chemistry)
+    param = pybamm.ParameterValues(ref)
 
     param.update(
         {
@@ -168,6 +211,14 @@ def set_parameters(ref="Chen2020"):
             "SEI kinetic rate constant [m.s-1]": 1e-12,
             "SEI open-circuit potential [V]": 0,
             "Lithium plating kinetic rate constant [m.s-1]": 1e-11,
+            "SEI growth transfer coefficient": 0.5,
+            "Lithium metal partial molar volume [m3.mol-1]": 1.30E-05,
+            "Lithium plating kinetic rate constant [m.s-1]": 1E-10,
+            "Exchange-current density for plating [A.m-2]": plating_exchange_current_density_OKane2020,
+            "Exchange-current density for stripping [A.m-2]": stripping_exchange_current_density_OKane2020,
+            "Initial plated lithium concentration [mol.m-3]": 0.00E+00,
+            "Typical plated lithium concentration [mol.m-3]": 1000,
+            "Lithium plating transfer coefficient": 0.5,
         },
         check_already_exists=False,
     )

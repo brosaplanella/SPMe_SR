@@ -4,6 +4,7 @@
 
 import pybamm
 import numpy as np
+from datetime import datetime
 from prettytable import PrettyTable
 from auxiliary_functions import assemble_model, set_parameters
 
@@ -27,6 +28,7 @@ C_dch = 1
 factors_x = [1, 2]
 factors_r = [1, 2]
 # solver_types = ["casadi", "scikits"]
+solver_types = ["scikits"]
 solver_types = ["casadi"]
 modes = {
     "CC": C_dch,
@@ -72,7 +74,7 @@ for solver_type in solver_types:
 
                     # Define operating mode
                     if solver_type == "casadi":
-                        solver = pybamm.CasadiSolver("safe", dt_max = 100)
+                        solver = pybamm.CasadiSolver("safe", dt_max = 5e2)
                     elif solver_type == "scikits":
                         solver = pybamm.ScikitsDaeSolver()
                     else:
@@ -108,7 +110,7 @@ for solver_type in solver_types:
 
                     time_sublist = []
                     for j in range(N_solve):
-                        print(f"Solving case {j + 1} out of {N_solve}")
+                        print(f"{datetime.now()} - Solving case {j + 1} out of {N_solve}")
                         sim.solve(t_eval, calc_esoh=False)
                         time_sublist.append(sim.solution.solve_time.value)
 
