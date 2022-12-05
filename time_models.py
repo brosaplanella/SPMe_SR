@@ -21,15 +21,13 @@ models = [
 param = set_parameters()
 
 # Change simulation parameters here
-N_solve = 5  # number of times to run the solver to get computational time
+N_solve = 10  # number of times to run the solver to get computational time
 N_cycles = 10
 C_ch = 1 / 2
 C_dch = 1
 factors_x = [1, 2]
 factors_r = [1, 2]
-# solver_types = ["casadi", "scikits"]
-solver_types = ["scikits"]
-solver_types = ["casadi"]
+solver_types = ["casadi", "scikits"]
 modes = {
     "CC": C_dch,
     "CCCV": pybamm.Experiment(
@@ -74,7 +72,7 @@ for solver_type in solver_types:
 
                     # Define operating mode
                     if solver_type == "casadi":
-                        solver = pybamm.CasadiSolver("safe", dt_max = 5e2)
+                        solver = pybamm.CasadiSolver("safe", dt_max = 1e3)
                     elif solver_type == "scikits":
                         solver = pybamm.ScikitsDaeSolver()
                     else:
@@ -114,6 +112,7 @@ for solver_type in solver_types:
                         sim.solve(t_eval, calc_esoh=False)
                         time_sublist.append(sim.solution.solve_time.value)
 
+                    print(time_sublist)
                     times.append(time_sublist)
 
                 table.add_row(
