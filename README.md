@@ -73,3 +73,5 @@ deactivate
 ```bash
 pip install -r requirements.txt
 ```
+
+4. Note that `scikits.odes` is not supported in Windows, so some scripts might fail.
