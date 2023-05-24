@@ -6,16 +6,24 @@ import pybamm
 import numpy as np
 from datetime import datetime
 from prettytable import PrettyTable
-from auxiliary_functions import assemble_model, set_parameters
+from auxiliary_functions import set_parameters
 
 pybamm.set_logging_level("WARNING")
 
 # Define models
-options = {"SEI": True, "plating": True, "porosity": True}
+options = {
+    "SEI": "ec reaction limited",
+    # "SEI": "none",
+    "SEI porosity change": "true",
+    # "lithium plating": "irreversible",
+    "lithium plating": "none",
+    "lithium plating porosity change": "true",
+}
 models = [
-    assemble_model({"name": "SPMe+SR", **options}),
-    assemble_model({"name": "DFN+SR", **options}),
+    pybamm.lithium_ion.SPMe(name="SPMe+SR", options=options),
+    # pybamm.lithium_ion.DFN(name="DFN+SR", options=options),
 ]
+
 
 # Define parameters
 param = set_parameters()
@@ -72,7 +80,7 @@ for solver_type in solver_types:
 
                     # Define operating mode
                     if solver_type == "casadi":
-                        solver = pybamm.CasadiSolver("safe", dt_max = 1e3)
+                        solver = pybamm.CasadiSolver("safe", dt_max=1e3)
                     elif solver_type == "scikits":
                         solver = pybamm.ScikitsDaeSolver()
                     else:
@@ -108,11 +116,12 @@ for solver_type in solver_types:
 
                     time_sublist = []
                     for j in range(N_solve):
-                        print(f"{datetime.now()} - Solving case {j + 1} out of {N_solve}")
+                        print(
+                            f"{datetime.now()} - Solving case {j + 1} out of {N_solve}"
+                        )
                         sim.solve(t_eval, calc_esoh=False)
                         time_sublist.append(sim.solution.solve_time.value)
 
-                    print(time_sublist)
                     times.append(time_sublist)
 
                 table.add_row(
