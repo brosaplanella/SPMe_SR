@@ -1,5 +1,5 @@
-pybamm
+pybamm>=22.7
 matplotlib
+jupyter
 prettytable
-flake8
 SciencePlots
