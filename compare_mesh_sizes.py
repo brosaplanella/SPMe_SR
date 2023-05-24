@@ -6,16 +6,23 @@
 import pybamm
 import numpy as np
 import pandas as pd
-from auxiliary_functions import assemble_model, set_parameters, create_model_tag
+from auxiliary_functions import set_parameters, create_model_tag
 
 pybamm.set_logging_level("WARNING")
 
 factors = [1, 2, 4, 8]
 
 # Define models
-options = {"SEI": False, "plating": True, "porosity": True}
-SPMe = assemble_model({"name": "SPMe+SR", **options})
-DFN = assemble_model({"name": "DFN+SR", **options})
+options = {
+    "SEI": "ec reaction limited",
+    # "SEI": "none",
+    "SEI porosity change": "true",
+    # "lithium plating": "irreversible",
+    "lithium plating": "none",
+    "lithium plating porosity change": "true",
+}
+SPMe = pybamm.lithium_ion.SPMe(name="SPMe+SR", options=options)
+DFN = pybamm.lithium_ion.DFN(name="DFN+SR", options=options)
 
 models = [SPMe, DFN]
 
@@ -27,6 +34,8 @@ df = pd.DataFrame()
 
 i = 0
 N = len(models) * len(factors) ** 2
+
+data = {}
 
 for model in models:
     for factor_x in factors:
@@ -53,17 +62,20 @@ for model in models:
 
             size_algebraic = np.size(sim.built_model.concatenated_algebraic)
             size_rhs = np.size(sim.built_model.concatenated_rhs)
-            df = df.append(
-                {
-                    "Model": model.name,
-                    "Nx": 20 * factor_x,
-                    "Nr": 20 * factor_r,
-                    "# rhs": size_rhs,
-                    "# algebraic": size_algebraic,
-                    "# total": size_algebraic + size_rhs,
-                },
-                ignore_index=True,
-            )
+            data[i - 1] = [
+                model.name,
+                20 * factor_x,
+                20 * factor_r,
+                size_rhs,
+                size_algebraic,
+                size_algebraic + size_rhs,
+            ]
+
+df = pd.DataFrame.from_dict(
+    data,
+    orient="index",
+    columns=["Model", "Nx", "Nr", "# rhs", "# algebraic", "# total"],
+)
 
 _, tag = create_model_tag(SPMe)
 filename = "system_size" + tag + ".csv"
