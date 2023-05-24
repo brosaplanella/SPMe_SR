@@ -93,7 +93,7 @@ def create_model_tag(model):
 
     if isinstance(model, pybamm.BaseModel):
         model_name = model.name
-        if not isinstance(model.submodels["sei"], pybamm.sei.NoSEI):
+        if not isinstance(model.submodels["primary sei"], pybamm.sei.NoSEI):
             tag += "_SEI"
         if not isinstance(
             model.submodels["lithium plating"], pybamm.lithium_plating.NoPlating
@@ -114,30 +114,10 @@ def create_model_tag(model):
 
 
 def assemble_model(options):
-    if options["name"].startswith("SPMe"):
-        model = pybamm.lithium_ion.SPMe(build=False, name=options["name"])
-        model.submodels[
-            "electrolyte conductivity"
-        ] = pybamm.electrolyte_conductivity.Integrated(model.param)
-    elif options["name"].startswith("DFN"):
-        model = pybamm.lithium_ion.DFN(build=False, name="DFN+SR")
-
-    if options["SEI"]:
-        model.submodels["sei"] = pybamm.sei.SEIGrowth(
-            model.param, "full electrode", options={"SEI": "ec reaction limited"}
-        )
-    if options["plating"]:
-        model.submodels["lithium plating"] = pybamm.lithium_plating.Plating(
-            model.param, False, options={"lithium plating": "irreversible"}
-        )
-    if options["porosity"]:
-        model.submodels["porosity"] = pybamm.porosity.ReactionDriven(
-            model.param, model.options, False
-        )
-
-    model.build_model()
-
-    return model
+    raise NotImplementedError(
+        "The assemble_model has been deprecated,"
+        " please define the model using PyBaMM options"
+    )
 
 
 def stripping_exchange_current_density_OKane2020(c_e, c_Li, T):
@@ -212,11 +192,12 @@ def set_parameters(ref="Chen2020"):
             "SEI open-circuit potential [V]": 0,
             "Lithium plating kinetic rate constant [m.s-1]": 1e-11,
             "SEI growth transfer coefficient": 0.5,
-            "Lithium metal partial molar volume [m3.mol-1]": 1.30E-05,
-            "Lithium plating kinetic rate constant [m.s-1]": 1E-10,
-            "Exchange-current density for plating [A.m-2]": plating_exchange_current_density_OKane2020,
-            "Exchange-current density for stripping [A.m-2]": stripping_exchange_current_density_OKane2020,
-            "Initial plated lithium concentration [mol.m-3]": 0.00E+00,
+            "Lithium metal partial molar volume [m3.mol-1]": 1.30e-05,
+            "Exchange-current density for plating [A.m-2]"
+            "": plating_exchange_current_density_OKane2020,
+            "Exchange-current density for stripping [A.m-2]"
+            "": stripping_exchange_current_density_OKane2020,
+            "Initial plated lithium concentration [mol.m-3]": 0.00e00,
             "Typical plated lithium concentration [mol.m-3]": 1000,
             "Lithium plating transfer coefficient": 0.5,
         },
