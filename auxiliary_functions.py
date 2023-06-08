@@ -242,7 +242,10 @@ def run_RPT(simulation, C_rate=1 / 3, RPT_at_cycles=None):
                 var_pts=simulation.var_pts,
             )
         sim.solve()
-        capacity.append(sim.solution["Discharge capacity [A.h]"].entries[-1])
+        capacity.append(
+            sim.solution["Discharge capacity [A.h]"].entries[-1]
+            - sim.solution["Discharge capacity [A.h]"].entries[0]
+        )
         termination.append(sim.solution.termination)
 
         del model

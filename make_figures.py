@@ -715,8 +715,9 @@ def plot_voltage_across_models(C_dch=1, C_ch=0.5, N_cycles=1000, plot_at_cycles=
                     ]
                 )
                 sim_cycle = run_cycle(sim, cycle, experiment=experiment)
+                Q0 = sim_cycle.solution["Discharge capacity [A.h]"].entries[0]
                 ax.plot(
-                    sim_cycle.solution["Discharge capacity [A.h]"].entries,
+                    sim_cycle.solution["Discharge capacity [A.h]"].entries - Q0,
                     sim_cycle.solution["Terminal voltage [V]"].entries,
                     linestyle=linestyle,
                     color=color,

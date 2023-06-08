@@ -1,13 +1,20 @@
 import os
 import pybamm
-from auxiliary_functions import assemble_model, set_parameters, create_filename
+from auxiliary_functions import set_parameters, create_filename
 
-pybamm.set_logging_level("INFO")
+pybamm.set_logging_level("NOTICE")
 
 # Define models
-options = {"SEI": True, "plating": True, "porosity": True}
-SPMe = assemble_model({"name": "SPMe+SR", **options})
-DFN = assemble_model({"name": "DFN+SR", **options})
+options = {
+    "SEI": "ec reaction limited",
+    # "SEI": "none",
+    "SEI porosity change": "true",
+    "lithium plating": "irreversible",
+    # "lithium plating": "none",
+    "lithium plating porosity change": "true",
+}
+SPMe = pybamm.lithium_ion.SPMe(name="SPMe+SR", options=options)
+DFN = pybamm.lithium_ion.DFN(name="DFN+SR", options=options)
 
 models = [SPMe, DFN]
 
@@ -16,9 +23,9 @@ param = set_parameters()
 
 # Define experiment
 N_cycles = 1000
-save_at_cycles = [1]    # [1] by default to save memory
-C_ch = 1 / 3
-C_dch = 2
+save_at_cycles = [1]  # [1] by default to save memory
+C_ch = 1 / 2
+C_dch = 1
 
 experiment = pybamm.Experiment(
     [
@@ -44,6 +51,8 @@ for model in models:
     )
     sim.solve(save_at_cycles=save_at_cycles)
     filename = create_filename(model, C_dch, C_ch)
+    # Hack to allow pickling
+    # sim.op_conds_to_built_solvers = None
     sim.save(
         os.path.join(
             "data",

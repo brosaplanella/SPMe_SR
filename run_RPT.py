@@ -15,7 +15,7 @@ set_plotting_format()
 N_cycles = 1000
 C_ch = 1 / 2
 C_dch = 1
-options = {"SEI": True, "plating": True, "porosity": True}
+options = {"SEI": False, "plating": True, "porosity": True}
 RPT_at_cycles = 10
 sims = ["SPMe_SR", "DFN_SR"]
 C_rates = [1 / 3]
@@ -36,7 +36,7 @@ for name in sims:
         df.to_csv(
             os.path.join(
                 "data",
-                "RPT"
+                "RPT_"
                 + create_C_tag(C_rate)
                 + "_"
                 + create_filename(sim.model, C_dch, C_ch)
