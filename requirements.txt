@@ -1,4 +1,5 @@
-pybamm>=22.7
+casadi==3.5.6rc2
+pybamm==22.10
 matplotlib
 jupyter
 prettytable
