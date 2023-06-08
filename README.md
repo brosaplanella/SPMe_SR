@@ -22,7 +22,7 @@ Note that in order to run the code, you need to have the requirements installed 
 The remaining files do not require the data so can be run straight away:
 * `compare_mesh_sizes.py`: generates csv files with the system size of each model for various mesh sizes. Settings can be changed on the script.
 * `plot_mesh_sizes.py`: generates Figure 2 of the article.
-* `time_models.py`: times the models to reproduce the results in Table 4. Settings can be change on the script. Note that this step can take a long time, and that `scikits.odes` solvers are only supporten in Linux and MacOs.
+* `time_models.py`: times the models to reproduce the results in Table 4. Settings can be change on the script. Note that this step can take a long time, and that `scikits.odes` solvers are only supported in Linux and MacOs.
 
 The file `auxiliary_functions.py` is needed as it includes some auxiliary functions that are called from the main scripts.
 
